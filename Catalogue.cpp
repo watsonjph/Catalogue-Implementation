@@ -100,7 +100,7 @@ int deleteProduct(Catalogue* catalogue, char* target) {
 	free(node->product);  // Free the product
 	node->product = NULL; // Set to NULL after freeing
 
-	// Optional - Further pruning logic would be necessary here if we need to remove empty branches
+	// Optional - Further pruning logic would be necessary here if we need to remove empty branches, Might be a good idea to implement this later like changing the nodes to add parent pointers
 	return 0;
 }
 
