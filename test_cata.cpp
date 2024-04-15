@@ -16,18 +16,18 @@ void test_add_product(Catalogue* catalogue, const char* ProductName, Component* 
     }
 
     Product* product = createProduct(productName, fullComponents);
-    assert(product != NULL);
+    assert(product != NULL); // Ensure the product was created successfully
 
     int addResult = addProduct(catalogue, product);
-    assert(addResult == 0);
+    assert(addResult == 0); // Ensure the product was added successfully
 
 
     printf("\nCatalogue after adding '%s':\n", productName);
     printCatalogue(catalogue);
 
     Product* retrievedProduct = getProduct(catalogue, productName);
-    assert(retrievedProduct != NULL);
-    assert(strcmp(retrievedProduct->name, productName) == 0);
+    assert(retrievedProduct != NULL); // Ensure the product was retrieved successfully
+    assert(strcmp(retrievedProduct->name, productName) == 0); // Ensure the retrieved product has the correct name
 
     free(productName);
 }
@@ -42,13 +42,13 @@ void test_delete_product(Catalogue* catalogue, const char* constProductName) {
     printCatalogue(catalogue);
 
     int delResult = deleteProduct(catalogue, productName);
-    assert(delResult == 0);
+    assert(delResult == 0); // Ensure the product was deleted successfully
 
     printf("\nCatalogue after deleting '%s':\n", productName);
     printCatalogue(catalogue);
 
     Product* retrievedProduct = getProduct(catalogue, productName);
-    assert(retrievedProduct == NULL);
+    assert(retrievedProduct == NULL); // Ensure the product was not found
 
     free(productName);
 }
