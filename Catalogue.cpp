@@ -77,7 +77,7 @@ int addProduct(Catalogue* catalogue, Product* product) {
 }
 
 
-Product* getProduct(Catalogue* catalogue, char* target) {
+Product* getProduct(Catalogue* catalogue, char* target) { // Returns the product if it exists, NULL otherwise
 	Node* node = navigateToNode(catalogue, target);
 	if (node != NULL) {
 		return node->product;
@@ -117,12 +117,25 @@ int deleteAllProducts(Catalogue* catalogue) {
 }
 
 
-void printSearchResults(Catalogue* catalogue, char* prefix) {
-	Node* node = navigateToNode(catalogue, prefix);
+void printSearchResults(Catalogue* catalogue, char* searchPrefix) {
+	Node* node = navigateToNode(catalogue, searchPrefix);
 	if (node == NULL) {
-		printf("\nNo matching prefix found in printSearchResults"); // You can change this no not print anything if you prefer, I just added it for debugging
+		printf("\nNo matching prefix found for '%s'\n", searchPrefix);
 		return;
 	}
+
+	// The prefix used here should include all characters leading up to but not including the node where the search stops. Mendokusai :))))))))))))).
+	// As navigateToNode may stop at the exact node matching the end of searchPrefix, we need to ensure we don't double-print the last char.
+	int len = strlen(searchPrefix);
+	char prefix[NAME_LIMIT];
+	if (len > 0) {
+		strncpy(prefix, searchPrefix, len - 1); // Copy all but the last character
+		prefix[len - 1] = '\0'; // Null-terminate early to avoid including last character
+	}
+	else {
+		prefix[0] = '\0'; // In case of an empty searchPrefix, start with an empty prefix
+	}
+
 	printFromNode(node, prefix);
 }
 
@@ -195,3 +208,13 @@ void printFromNode(Node* node, char* prefix) { // Recursively print all the prod
 		}
 	}
 }
+
+
+
+// Things to do:
+
+// 1.) Test for Bugs
+// 2.) Test if Catalogue is working as expected
+// 3.) Test if the Trie is working as expected
+// 4.) Test if the Products are working as expected
+// 5.) Integrate the Catalogue with the rest of the program
