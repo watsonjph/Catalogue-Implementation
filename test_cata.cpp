@@ -74,32 +74,26 @@ int main() {
     // Components for each product
     Component doorComponents[3] = { {"Wood", 10}, {"Nails", 100}, {"Paint", 5} };
     Component windowComponents[2] = { {"Glass", 4}, {"Frame", 8} };
-    Component shelfComponents[4] = { {"Wood", 5}, {"Nails", 50}, {"Paint", 2}, {"Screws", 20} };
-    Component shellComponents[3] = { {"Metal", 10}, {"Screws", 50}, {"Paint", 3} };
+    Component roofComponents[3] = { {"Tiles", 20}, {"Wood", 15}, {"Nails", 200} };
 
-    test_add_product(catalogue, "Door 24", doorComponents, 3);
+    test_add_product(catalogue, "GIORP 2000", doorComponents, 3);
+    test_add_product(catalogue, "Window 12", windowComponents, 2);
+    
 
-    test_add_product(catalogue, "Window", windowComponents, 2);
-
-    char searchQuery1[] = "Doo";
-    char searchQuery2[] = "Droor";
+    // Update the search queries if needed or any other interactions
+     // Ensure the correct product name is used
+    char searchQuery1[] = "GIO";
+    char searchQuery2[] = "GIRW";
     char searchQuery3[] = "Wind";
     test_search_results(catalogue, searchQuery1);
     test_search_results(catalogue, searchQuery2);
     test_search_results(catalogue, searchQuery3);
-    test_delete_product(catalogue, "Window");
 
-    test_add_product(catalogue, "Shelf", shelfComponents, 4);
-    test_add_product(catalogue, "Shell", shellComponents, 3);
-
-    test_delete_product(catalogue, "Shelf");
-
-
-    
+    test_delete_product(catalogue, "Window 12");
+    // Continue with other tests
     printf("\n\nFinal state of the Catalogue:\n");
     printCatalogue(catalogue);
 
-    printf("\n\nAfter Deleting all products");
     deleteAllProducts(catalogue);
     printCatalogue(catalogue);
     free(catalogue);

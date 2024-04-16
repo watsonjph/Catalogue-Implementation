@@ -61,7 +61,7 @@ int addProduct(Catalogue* catalogue, Product* product) {
 		printf("\nInvalid character in product name"); // Invalid character in product name
 		return -1;
 	}
-	
+
 	if (catalogue->roots[index] == NULL) { // If the root node for the first character doesn't exist, create it
 		catalogue->roots[index] = createTrieNode(product->name[0], NULL);
 	}
@@ -95,45 +95,57 @@ Product* getProduct(Catalogue* catalogue, char* target) { // Returns the product
 }
 
 
-int deleteProduct(Catalogue* catalogue, char* target) { // Deletes the product if it exists, DOES NOT use freeTrieNode because we only want to delete the product. and freeTrieNode deletes the whole tree
+int deleteProduct(Catalogue* catalogue, char* target) {
 	if (catalogue == NULL || target == NULL) {
-		return -1;
+		return -1; // Input validation error.
 	}
+
+	int index = getIndex(target[0]);
+	if (index == -1 || index >= MAX_TRIE_ROOTS) {
+		return -1; // Invalid first character handling, means the product name is invalid.
+	}
+
 	Node* node = navigateToNode(catalogue, target);
 	if (node == NULL || node->product == NULL) {
-		return -1;
+		return -1; // Product doesn't exist or was already deleted.
 	}
-	free(node->product); // Free the product
-	node->product = NULL; // Set the product to NULL
 
+	// Free the product and then set the pointer to NULL
+	free(node->product);
+	node->product = NULL;
 
-	while (node != NULL && node->product == NULL) { // Traverse up the tree and delete nodes with no products
+	// Traverse up the tree and delete nodes with no products and no children
+	while (node != NULL && node->product == NULL) {
 		bool hasChildren = false;
-		for (int i = 0; i < MAX_TRIE_ROOTS; i++) { // Check if the node has any children, if it does, break
+		for (int i = 0; i < MAX_TRIE_ROOTS; i++) {
 			if (node->children[i] != NULL) {
 				hasChildren = true;
 				break;
 			}
 		}
-		if (hasChildren == false) { // If the node has no children, delete it
+
+		if (hasChildren == false) {
 			Node* parent = node->parent;
 			if (parent != NULL) {
 				for (int i = 0; i < MAX_TRIE_ROOTS; i++) {
 					if (parent->children[i] == node) {
 						parent->children[i] = NULL;
+						free(node); // Free the node as it's no longer connected
+						node = parent; // Move up to the parent
 						break;
 					}
 				}
 			}
 			else {
-
-				catalogue->roots[tolower(target[0]) - 'a'] = NULL; // If the node is a root, set it to NULL
+				// Node is a root node
+				catalogue->roots[index] = NULL;
+				free(node);
+				break; // Break since there's no parent to move up to.
 			}
-			free(node);
-			node = parent; // Move up the tree
 		}
 		else {
-			break; // If the node has children, stop deleting
+			// If the node has children, we stop pruning
+			break;
 		}
 	}
 	return 0;
@@ -180,6 +192,21 @@ void printCatalogue(Catalogue* catalogue) {
 		printf("\nCatalogue is NULL");
 		return;
 	}
+
+	// Check if all roots are NULL, indicating an empty catalogue
+	bool isEmpty = true;
+	for (int i = 0; i < MAX_TRIE_ROOTS; i++) {
+		if (catalogue->roots[i] != NULL) {
+			isEmpty = false;
+			break;
+		}
+	}
+
+	if (isEmpty) {
+		printf("\nCatalogue is empty\n");
+		return;
+	}
+
 	printf("Catalogue Products:\n");
 	char initialPrefix[NAME_LIMIT] = ""; // Initialize with an empty string so that the product name is printed correctly
 	for (int i = 0; i < MAX_TRIE_ROOTS; i++) {
@@ -189,43 +216,36 @@ void printCatalogue(Catalogue* catalogue) {
 	}
 }
 
+
 // Helper functions to prevent code duplication that I implemented, you can choose to use them or not, I just prefer to keep the code shorter for readability
 
 Node* navigateToNode(Catalogue* catalogue, char* str) {
 	if (catalogue == NULL || str == NULL) {
-		printf("\nCatalogue or search string is NULL");
 		return NULL;
 	}
 
 	int index = getIndex(str[0]); // Get the index of the first character
 	if (index == -1 || index >= MAX_TRIE_ROOTS) {
-		printf("\nInvalid character in search string: %c", str[0]);
 		return NULL;
 	}
 
 	Node* currentNode = catalogue->roots[index]; // Start at the root node for the first character
 	if (currentNode == NULL) {
-		// The root node for the first character does not exist
 		return NULL;
 	}
 
 	for (int i = 1; str[i] != '\0'; i++) {
 		index = getIndex(str[i]);
 		if (index == -1 || index >= MAX_TRIE_ROOTS) {
-			printf("\nInvalid character in search string: %c", str[i]);
 			return NULL;
 		}
-
-		// Check if currentNode is NULL before accessing its children
-		if (currentNode == NULL || currentNode->children[index] == NULL) {
-			// If the next node is NULL, the product does not exist in the trie
+		if (currentNode->children[index] == NULL) {
 			return NULL;
 		}
-
 		currentNode = currentNode->children[index];
 	}
 
-	return currentNode; // Return the node where the last character of the string is located
+	return currentNode; // Node found, return it
 }
 
 
