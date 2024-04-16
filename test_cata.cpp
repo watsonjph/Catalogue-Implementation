@@ -77,7 +77,7 @@ int main() {
     Component shelfComponents[4] = { {"Wood", 5}, {"Nails", 50}, {"Paint", 2}, {"Screws", 20} };
     Component shellComponents[3] = { {"Metal", 10}, {"Screws", 50}, {"Paint", 3} };
 
-    test_add_product(catalogue, "Door", doorComponents, 3);
+    test_add_product(catalogue, "Door 24", doorComponents, 3);
 
     test_add_product(catalogue, "Window", windowComponents, 2);
 
@@ -95,11 +95,13 @@ int main() {
     test_delete_product(catalogue, "Shelf");
 
 
-    //test_delete_all_products(catalogue);
+    
     printf("\n\nFinal state of the Catalogue:\n");
     printCatalogue(catalogue);
 
+    printf("\n\nAfter Deleting all products");
     deleteAllProducts(catalogue);
+    printCatalogue(catalogue);
     free(catalogue);
 
     printf("\nAll tests passed.\n");

@@ -41,7 +41,7 @@ Node* createTrieNode(char character, Node* parent) {
 		exit(EXIT_FAILURE);
 	}
 	newNode->character = character;
-	newNode->parent = parent;  // Set the parent
+	newNode->parent = parent;
 	newNode->product = NULL;
 	for (int i = 0; i < MAX_TRIE_ROOTS; i++) {
 		newNode->children[i] = NULL;
@@ -56,19 +56,28 @@ int addProduct(Catalogue* catalogue, Product* product) {
 		return -1;
 	}
 
-	int index = tolower(product->name[0]) - 'a';
-	if (catalogue->roots[index] == NULL) {
-		catalogue->roots[index] = createTrieNode(product->name[0], NULL);  // Root nodes have no parent
+	int index = getIndex(product->name[0]);
+	if (index == -1) {
+		printf("\nInvalid character in product name"); // Invalid character in product name
+		return -1;
+	}
+	
+	if (catalogue->roots[index] == NULL) { // If the root node for the first character doesn't exist, create it
+		catalogue->roots[index] = createTrieNode(product->name[0], NULL);
 	}
 	Node* currentNode = catalogue->roots[index];
-	for (int i = 1; i < strlen(product->name); i++) {
-		int childIndex = tolower(product->name[i]) - 'a';
-		if (currentNode->children[childIndex] == NULL) {
-			currentNode->children[childIndex] = createTrieNode(product->name[i], currentNode);
+	for (int i = 1; product->name[i] != '\0'; i++) { // Traverse the trie to add the product
+		index = getIndex(product->name[i]);
+		if (index == -1) {
+			printf("\nInvalid character in product name");
+			return -1;
 		}
-		currentNode = currentNode->children[childIndex];
+		if (currentNode->children[index] == NULL) { // If the node for the character doesn't exist, create it
+			currentNode->children[index] = createTrieNode(product->name[i], currentNode);
+		}
+		currentNode = currentNode->children[index];
 	}
-	currentNode->product = product;
+	currentNode->product = product; // Set the product at the last node
 
 	return 0;
 }
@@ -182,16 +191,41 @@ void printCatalogue(Catalogue* catalogue) {
 
 // Helper functions to prevent code duplication that I implemented, you can choose to use them or not, I just prefer to keep the code shorter for readability
 
-Node* navigateToNode(Catalogue* catalogue, char* str) { // Basically navigate to the node that corresponds to the given string
+Node* navigateToNode(Catalogue* catalogue, char* str) {
 	if (catalogue == NULL || str == NULL) {
+		printf("\nCatalogue or search string is NULL");
 		return NULL;
 	}
 
-	Node* currentNode = catalogue->roots[tolower(str[0]) - 'a'];
-	for (int i = 1; currentNode != NULL && str[i] != '\0'; i++) {
-		currentNode = currentNode->children[tolower(str[i]) - 'a'];
+	int index = getIndex(str[0]); // Get the index of the first character
+	if (index == -1 || index >= MAX_TRIE_ROOTS) {
+		printf("\nInvalid character in search string: %c", str[0]);
+		return NULL;
 	}
-	return currentNode;
+
+	Node* currentNode = catalogue->roots[index]; // Start at the root node for the first character
+	if (currentNode == NULL) {
+		// The root node for the first character does not exist
+		return NULL;
+	}
+
+	for (int i = 1; str[i] != '\0'; i++) {
+		index = getIndex(str[i]);
+		if (index == -1 || index >= MAX_TRIE_ROOTS) {
+			printf("\nInvalid character in search string: %c", str[i]);
+			return NULL;
+		}
+
+		// Check if currentNode is NULL before accessing its children
+		if (currentNode == NULL || currentNode->children[index] == NULL) {
+			// If the next node is NULL, the product does not exist in the trie
+			return NULL;
+		}
+
+		currentNode = currentNode->children[index];
+	}
+
+	return currentNode; // Return the node where the last character of the string is located
 }
 
 
@@ -236,10 +270,16 @@ void printFromNode(Node* node, char* prefix) { // Recursively print all the prod
 }
 
 
-// Things to do:
-
-// 1.) Test for Bugs
-// 2.) Test if Catalogue is working as expected
-// 3.) Test if the Trie is working as expected
-// 4.) Test if the Products are working as expected
-// 5.) Integrate the Catalogue with the rest of the program
+int getIndex(char c) {
+	if (c == ' ') {
+		return 26; // 26 for space
+	}
+	if (c >= '0' && c <= '9') {
+		return 27 + (c - '0'); // Return 27-36 for '0'-'9'
+	}
+	c = tolower(c);
+	if (c >= 'a' && c <= 'z') {
+		return c - 'a';  // 0-25 for 'a'-'z'
+	}
+	return -1;  // Invalid character
+}
