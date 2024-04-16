@@ -59,6 +59,13 @@ void test_search_results(Catalogue* catalogue, char* searchQuery) {
     printSearchResults(catalogue, searchQuery);
 }
 
+void test_delete_all_products(Catalogue* catalogue) {
+	printf("\n--- Test Delete All Products ---\n");
+	deleteAllProducts(catalogue);
+	printf("\nCatalogue after deleting all products:\n");
+	printCatalogue(catalogue);
+}
+
 
 int main() {
     Catalogue* catalogue = initCatalogue();
@@ -67,6 +74,8 @@ int main() {
     // Components for each product
     Component doorComponents[3] = { {"Wood", 10}, {"Nails", 100}, {"Paint", 5} };
     Component windowComponents[2] = { {"Glass", 4}, {"Frame", 8} };
+    Component shelfComponents[4] = { {"Wood", 5}, {"Nails", 50}, {"Paint", 2}, {"Screws", 20} };
+    Component shellComponents[3] = { {"Metal", 10}, {"Screws", 50}, {"Paint", 3} };
 
     test_add_product(catalogue, "Door", doorComponents, 3);
 
@@ -80,6 +89,13 @@ int main() {
     test_search_results(catalogue, searchQuery3);
     test_delete_product(catalogue, "Window");
 
+    test_add_product(catalogue, "Shelf", shelfComponents, 4);
+    test_add_product(catalogue, "Shell", shellComponents, 3);
+
+    test_delete_product(catalogue, "Shelf");
+
+
+    //test_delete_all_products(catalogue);
     printf("\n\nFinal state of the Catalogue:\n");
     printCatalogue(catalogue);
 

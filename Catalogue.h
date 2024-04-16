@@ -8,7 +8,7 @@ Product Catalogue (Trie)
 
 
 #define COMPONENT_LIMIT 5 // Max components per product
-#define MAX_TRIE_ROOTS 26
+#define MAX_TRIE_ROOTS 128 // ASCII characters
 #define NAME_LIMIT 100
 
 typedef struct Product {
@@ -23,6 +23,7 @@ typedef struct Node {
 
     char character;
     Product* product; // If this isn't the end of a name, leave NULL
+    struct Node* parent;
     Node* children[MAX_TRIE_ROOTS];
 
 }Node;
@@ -37,7 +38,7 @@ Catalogue* initCatalogue();
 
 
 Product* createProduct(char* name, Component* arrayOfComponents); //
-Node* createTrieNode(char character); // If no product at this node, product = NULL;
+Node* createTrieNode(char character, Node* parent); // If no product at this node, product = NULL;
 
 //Calls createTrieNode for each char (if needed), stores product in last one.
 int addProduct(Catalogue* catalogue, Product* product);
@@ -55,3 +56,4 @@ void printCatalogue(Catalogue* catalogue); //Print ALL products in Trie
 Node* navigateToNode(Catalogue* catalogue, char* prefix);
 void freeTrieNode(Node* node); //Recursively free all nodes in a trie
 void printFromNode(Node* node, char* prefix); // Recursively print all products in a trie
+int getIndex(char c);

@@ -34,46 +34,43 @@ Product* createProduct(char* name, Component* arrayOfComponents) { // Creates a 
 }
 
 
-Node* createTrieNode(char character) {
+Node* createTrieNode(char character, Node* parent) {
 	Node* newNode = (Node*)malloc(sizeof(Node));
 	if (newNode == NULL) {
 		printf("\nMalloc failure in Creating Trie Node, Exiting Program");
 		exit(EXIT_FAILURE);
 	}
-
 	newNode->character = character;
+	newNode->parent = parent;  // Set the parent
 	newNode->product = NULL;
-	for (int i = 0; i < MAX_TRIE_ROOTS; i++) { // Set all children to NULL
+	for (int i = 0; i < MAX_TRIE_ROOTS; i++) {
 		newNode->children[i] = NULL;
 	}
-
 	return newNode;
 }
 
 
 int addProduct(Catalogue* catalogue, Product* product) {
-	if (catalogue == NULL || product == NULL) {  // You can change this, so that the caller handles the printing of the error message to follow Single Responsibility Principle
+	if (catalogue == NULL || product == NULL) {
 		printf("\nCatalogue or Product is NULL");
-		return -1;            // Either this or exit(EXIT_FAILURE) depending on how you want to handle the error
+		return -1;
 	}
 
-	int index = tolower(product->name[0]) - 'a'; // Get the index of the root node
-	if (catalogue->roots[index] == NULL) { // If the root node doesn't exist, create it
-		catalogue->roots[index] = createTrieNode(product->name[0]);
+	int index = tolower(product->name[0]) - 'a';
+	if (catalogue->roots[index] == NULL) {
+		catalogue->roots[index] = createTrieNode(product->name[0], NULL);  // Root nodes have no parent
 	}
-
-	Node* currentNode = catalogue->roots[index]; // Start at the root node
-	for (int i = 1; i < strlen(product->name); i++) { // For each character in the product name
-		int childIndex = tolower(product->name[i]) - 'a'; // Get the index of the child node
-		if (currentNode->children[childIndex] == NULL) { // If the child node doesn't exist, create it
-			currentNode->children[childIndex] = createTrieNode(product->name[i]);
+	Node* currentNode = catalogue->roots[index];
+	for (int i = 1; i < strlen(product->name); i++) {
+		int childIndex = tolower(product->name[i]) - 'a';
+		if (currentNode->children[childIndex] == NULL) {
+			currentNode->children[childIndex] = createTrieNode(product->name[i], currentNode);
 		}
-		currentNode = currentNode->children[childIndex]; // Move to the child node
+		currentNode = currentNode->children[childIndex];
 	}
+	currentNode->product = product;
 
-	currentNode->product = product; // Set the product at the last node
-
-	return 0; // 0 indicates success in this implementation, can change later for a more uniform format
+	return 0;
 }
 
 
@@ -89,7 +86,7 @@ Product* getProduct(Catalogue* catalogue, char* target) { // Returns the product
 }
 
 
-int deleteProduct(Catalogue* catalogue, char* target) {
+int deleteProduct(Catalogue* catalogue, char* target) { // Deletes the product if it exists, DOES NOT use freeTrieNode because we only want to delete the product. and freeTrieNode deletes the whole tree
 	if (catalogue == NULL || target == NULL) {
 		return -1;
 	}
@@ -97,10 +94,39 @@ int deleteProduct(Catalogue* catalogue, char* target) {
 	if (node == NULL || node->product == NULL) {
 		return -1;
 	}
-	free(node->product);  // Free the product
-	node->product = NULL; // Set to NULL after freeing
+	free(node->product); // Free the product
+	node->product = NULL; // Set the product to NULL
 
-	// Optional - Further pruning logic would be necessary here if we need to remove empty branches, Might be a good idea to implement this later like changing the nodes to add parent pointers
+
+	while (node != NULL && node->product == NULL) { // Traverse up the tree and delete nodes with no products
+		bool hasChildren = false;
+		for (int i = 0; i < MAX_TRIE_ROOTS; i++) { // Check if the node has any children, if it does, break
+			if (node->children[i] != NULL) {
+				hasChildren = true;
+				break;
+			}
+		}
+		if (hasChildren == false) { // If the node has no children, delete it
+			Node* parent = node->parent;
+			if (parent != NULL) {
+				for (int i = 0; i < MAX_TRIE_ROOTS; i++) {
+					if (parent->children[i] == node) {
+						parent->children[i] = NULL;
+						break;
+					}
+				}
+			}
+			else {
+
+				catalogue->roots[tolower(target[0]) - 'a'] = NULL; // If the node is a root, set it to NULL
+			}
+			free(node);
+			node = parent; // Move up the tree
+		}
+		else {
+			break; // If the node has children, stop deleting
+		}
+	}
 	return 0;
 }
 
@@ -169,7 +195,7 @@ Node* navigateToNode(Catalogue* catalogue, char* str) { // Basically navigate to
 }
 
 
-void freeTrieNode(Node* node) { // Recursively free all the children of a node
+void freeTrieNode(Node* node) { // Recursively free all the children of a node, and the node itself
 	if (node == NULL) { // base case
 		return;
 	}
@@ -190,7 +216,7 @@ void printFromNode(Node* node, char* prefix) { // Recursively print all the prod
 	snprintf(newPrefix, sizeof(newPrefix), "%s%c", prefix, node->character); // Append the character to the prefix, maybe better than strncat
 
 	// Check if this node has a product and print details
-	if (node->product != NULL) { 
+	if (node->product != NULL) {
 		printf("%s: ", newPrefix); // Print the complete product name built so far
 		for (int i = 0; i < COMPONENT_LIMIT; i++) {
 			// Make sure the component has a valid name and quantity before printing
@@ -208,7 +234,6 @@ void printFromNode(Node* node, char* prefix) { // Recursively print all the prod
 		}
 	}
 }
-
 
 
 // Things to do:
