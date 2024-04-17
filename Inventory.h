@@ -3,20 +3,22 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <ctype.h>
-#pragma warning(disable:4996)
-/*
-Inventory (Hash Table)
-*/
+
+
+
+#pragma warning(disable: 4996)
 
 #define NAME_LIMIT 50
-#define INVENTORY_SIZE 50
+#define INVENTORY_SIZE 25
 
 
 typedef struct Component {
 
     char name[NAME_LIMIT];
     int  qty;
+    struct Component* next;
 
 }Component;
 
@@ -40,4 +42,3 @@ int modifyQty(Inventory* inventory, char* name, int qtyToAdd); //E.g. qtyToAdd =
 
 void printComponent(Component* component);//Used inside printInventory for loop
 void printInventory(Inventory* inventory);
-

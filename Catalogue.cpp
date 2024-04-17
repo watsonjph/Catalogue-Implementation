@@ -96,59 +96,59 @@ Product* getProduct(Catalogue* catalogue, char* target) { // Returns the product
 
 
 int deleteProduct(Catalogue* catalogue, char* target) {
-	if (catalogue == NULL || target == NULL) {
-		return -1; // Input validation error.
-	}
+    if (catalogue == NULL || target == NULL) {
+        printf("\nError: Catalogue or target is NULL.");
+        return -1;
+    }
 
-	int index = getIndex(target[0]);
-	if (index == -1 || index >= MAX_TRIE_ROOTS) {
-		return -1; // Invalid first character handling, means the product name is invalid.
-	}
+    printf("\nAttempting to delete product: %s\n", target);
+    int index = getIndex(target[0]);
+    if (index == -1 || index >= MAX_TRIE_ROOTS) {
+        printf("\nError: Invalid first character '%c' in product name.\n", target[0]);
+        return -1;
+    }
 
-	Node* node = navigateToNode(catalogue, target);
-	if (node == NULL || node->product == NULL) {
-		return -1; // Product doesn't exist or was already deleted.
-	}
+    Node* node = navigateToNode(catalogue, target);
+    if (node == NULL || node->product == NULL) {
+        printf("\nNo products found with this name: '%s'.\n", target);
+        return -1; // Return error code indicating the product was not found.
+    }
 
-	// Free the product and then set the pointer to NULL
-	free(node->product);
-	node->product = NULL;
+    // Proceed to free the product and then set the pointer to NULL
+    free(node->product);
+    node->product = NULL;
 
-	// Traverse up the tree and delete nodes with no products and no children
-	while (node != NULL && node->product == NULL) {
-		bool hasChildren = false;
-		for (int i = 0; i < MAX_TRIE_ROOTS; i++) {
-			if (node->children[i] != NULL) {
-				hasChildren = true;
-				break;
-			}
-		}
+    // Traverse up the tree and delete nodes with no products and no children
+    while (node != NULL && node->product == NULL) {
+        bool hasChildren = false;
+        for (int i = 0; i < MAX_TRIE_ROOTS; i++) {
+            if (node->children[i] != NULL) {
+                hasChildren = true;
+                break;
+            }
+        }
 
-		if (hasChildren == false) {
-			Node* parent = node->parent;
-			if (parent != NULL) {
-				for (int i = 0; i < MAX_TRIE_ROOTS; i++) {
-					if (parent->children[i] == node) {
-						parent->children[i] = NULL;
-						free(node); // Free the node as it's no longer connected
-						node = parent; // Move up to the parent
-						break;
-					}
-				}
-			}
-			else {
-				// Node is a root node
-				catalogue->roots[index] = NULL;
-				free(node);
-				break; // Break since there's no parent to move up to.
-			}
-		}
-		else {
-			// If the node has children, we stop pruning
-			break;
-		}
-	}
-	return 0;
+        if (!hasChildren) {
+            Node* parent = node->parent;
+            if (parent != NULL) {
+                for (int i = 0; i < MAX_TRIE_ROOTS; i++) {
+                    if (parent->children[i] == node) {
+                        parent->children[i] = NULL;
+                        free(node);
+                        node = parent; // Move up to the parent
+                        break;
+                    }
+                }
+            } else {
+                catalogue->roots[index] = NULL;
+                free(node);
+                break; // Break since there's no parent to move up to.
+            }
+        } else {
+            break; // Stop if node still has children
+        }
+    }
+    return 0; // Successfully deleted the product
 }
 
 

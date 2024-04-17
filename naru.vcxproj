@@ -132,6 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Catalogue.cpp" />
+    <ClCompile Include="Inventory.cpp" />
     <ClCompile Include="test_cata.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
